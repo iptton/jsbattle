@@ -16,7 +16,7 @@
 
 
 	var importScriptsArray  = [];
-	var workers 			= [];
+	var workers 			= {};
 	var blobUrls 			= [];
 	var scriptBegin 		= "\n\
 var log;\n\
@@ -55,15 +55,15 @@ onmessage=null;\n\
 	}catch(e){log("error",e.message)}/*user script end*/\n\
 }());\n\
 postMessage({"cmd":"ready"});';
-	function getScript(scriptContentStr){
+	function getScript(scriptContentStr,id){
 		var imports = importScriptsArray.length>0?'importScripts("'+importScriptsArray.join('","')+'");':'';
-		var s = [ scriptBegin ,imports , scriptContentStr , scriptEnd];
+		var s = [ "var id="+id+";\n", scriptBegin ,imports , scriptContentStr , scriptEnd];
 		//console.info(s.join(""));
 		return s;
 	}
-	function addWorker(scriptContentStr){
+	function addWorker(scriptContentStr,id){
 		peddingCount++;
-		var blob = new Blob( getScript(scriptContentStr)  );
+		var blob = new Blob( getScript(scriptContentStr,id)  );
 		var blobUrl = URL.createObjectURL(blob);
 		blobUrls.push(blobUrl);
 		var worker = new Worker(blobUrl);
@@ -71,8 +71,10 @@ postMessage({"cmd":"ready"});';
 		
 		//var worker  = new Worker("../test.js");
 		worker.onerror = JsBattle.onError;
-		worker.onmessage = onMessage;
-		workers.push(worker);
+		worker.onmessage = function(evt){
+			onMessage(evt,id);
+		}
+		workers[id] = worker;
 		return worker;
 	}
 	function addImports () {
@@ -89,10 +91,11 @@ postMessage({"cmd":"ready"});';
 	}
 
 	var peddingCount = 0;
-	function onMessage(event){
+	function onMessage(event,id){
 		event.stopImmediatePropagation();
 		event.preventDefault();
 		var d = event.data;
+		d.from = id;
 		if(d.cmd){
 			switch(d.cmd){
 				case 'ready':
@@ -113,8 +116,15 @@ postMessage({"cmd":"ready"});';
 
 	}
 	function removeAll(){
+		for(var id in workers){
+			if(workers.hasOwnProperty(id)){
+				workers[id].terminate();
+				workers.delete(id);
+			}
+		}
+
 		workers.forEach(function(worker){
-			worker.terminate();
+			
 		});
 		blobUrls.forEach(function(url){
 			URL.revokeObjectURL(url);

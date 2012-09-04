@@ -5,26 +5,78 @@
  		<script type="text/javascript" src="../jsbattle.js"></script>
  		<script type="text/javascript">
  			function $(id){return document.getElementById(id);}
- 			var workers=[];
+ 			var workers={};
+
+ 			var round = 0;
+ 			var Game = {
+ 				'results':{},
+ 				'request':function(){
+ 					for(var id in workers){
+ 						if(workers.hasOwnProperty(id)){
+ 							workers[id].postMessage({'cmd':'request'});
+ 						}
+ 					}
+ 				},
+ 				'cleanup':function(){
+ 					results = [];
+ 					round ++;
+ 					if(round <= 15)Game.request();
+ 				},
+ 				'output':function(){
+ 					console.info("output");
+ 					for(var id in workers){
+ 						if(workers.hasOwnProperty(id)){
+ 							$('output').innerHTML += "Player"+id+" hand out"+Game.results[id]+ " <br />";
+ 						}
+ 					}
+ 				},
+ 				'notify':function(){
+ 					for(var id in workers){
+ 						if(workers.hasOwnProperty(id)){
+ 							workers[id].postMessage({'cmd':'result','data':Game.results});
+ 						}
+ 					}
+ 				}
+ 			};
+
  			window.onload = function(){
  				$('addAIBtn').addEventListener('click',onAddClicked,false);
  				$('toggleRunState').addEventListener('click',onToggleClicked,false);
  				JsBattle.onReady = function(){
  					JsBattle.onMessage = function(evt){
- 						console.info("【main thread】got message from worker",JSON.stringify(evt.data));
+ 						var d = evt.data;
+ 						if(d.cmd == 'handout'){
+ 							var s = d.data;
+ 							if(Game.results.hasOwnProperty[d.id]){
+ 								console.error("should not happen!");
+ 								return;
+ 							}
+ 							Game.results[d.id] = d.data;
+
+ 							var isAllHandlout = true;
+ 							// check if all player handed out
+		 					for(var id in workers){
+		 						if(workers.hasOwnProperty(id) &&
+		 							!Game.results.hasOwnProperty(id)){
+		 							isAllHandlout = false;
+		 							break;
+		 						}
+		 					}
+		 					if(isAllHandlout){
+		 						Game.output();
+		 						Game.notify();
+		 						Game.cleanup();
+		 					}
+		 				}	
  					}
  					console.info("all ready");
- 					//setTimeout(function(){
- 						workers.forEach(function(item){
- 							item.postMessage({'cmd':'foundTank','data':'bala bala'});
- 							//item.terminate();
- 						})
- 					//},1000);
+ 					Game.request();
  				}
  				JsBattle.addImports("../test.js");
  			}
 
  			var isRunning = false;
+ 			var _id = 0;
  			function onToggleClicked (event) {
  				if(isRunning){
  					event.target.innerHTML = "start";
@@ -36,8 +88,9 @@
  					for(var i=0;i<inputs.length;++i){
  						var ta = inputs[i];
  						var s = ta.value;
- 						var w = JsBattle.addWorker(s);
- 						workers.push(w);
+ 						var id = _id++;
+ 						var w = JsBattle.addWorker(s,id);
+ 						workers[id] = w;
  					}
  				}
  				isRunning = !isRunning;
@@ -66,12 +119,9 @@
  			</div>
  			<div id="editors">
  				<textarea class="userCodeInput" placeholder="code here">
-CodeTank.prototype.onFoundTank = function(d){
-  log('my found tank',d);
-}	
-CodeTank.prototype.test = function(){
-log("test...");
-} 				
+Guess.prototype.onRequest = function(){
+	this.handout(Math.floor(Math.random()*3+1));	
+};
  				</textarea>
  				<textarea class="userCodeInput" placeholder="code here">
 // onmessage,self,postMessage is all forbidden;
@@ -79,7 +129,7 @@ onmessage=function(){log("a.....")};
 postMessage('cause error');
 self.addEventListener('message',function(){console.info("this never work")});
  				</textarea>
- 				<textarea class="userCodeInput">
+ 				<!--textarea class="userCodeInput">
 /*
 while(true){
 	var s=[];// to force browser NOT to optimize the 'for' below 
@@ -88,7 +138,7 @@ while(true){
 	 log("finished caculate,begining next caculate");
 }
 */
- 				</textarea>
+ 				</textarea-->
  			</div>
  		</div>
  <script type="text/javascript">
