@@ -119,7 +119,7 @@ postMessage({"cmd":"ready"});';
 		for(var id in workers){
 			if(workers.hasOwnProperty(id)){
 				workers[id].terminate();
-				workers.delete(id);
+				delete workers[id];
 			}
 		}
 
