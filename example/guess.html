@@ -14,10 +14,12 @@
  						console.info("【main thread】got message from worker",JSON.stringify(evt.data));
  					}
  					console.info("all ready");
- 					workers.forEach(function(item){
- 						item.postMessage("start");
- 						//item.terminate();
- 					})
+ 					//setTimeout(function(){
+ 						workers.forEach(function(item){
+ 							item.postMessage({'cmd':'foundTank','data':'bala bala'});
+ 							//item.terminate();
+ 						})
+ 					//},1000);
  				}
  				JsBattle.addImports("../test.js");
  			}
@@ -64,9 +66,12 @@
  			</div>
  			<div id="editors">
  				<textarea class="userCodeInput" placeholder="code here">
-setInterval(function(){
- 	CodeTank.fire();
-},5000)
+CodeTank.prototype.onFoundTank = function(d){
+  log('my found tank',d);
+}	
+CodeTank.prototype.test = function(){
+log("test...");
+} 				
  				</textarea>
  				<textarea class="userCodeInput" placeholder="code here">
 // onmessage,self,postMessage is all forbidden;

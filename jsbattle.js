@@ -41,7 +41,6 @@ var log;\n\
 			JsBattle.onMessage(e);\n\
 		}\n\
 	}\n\
-	postMessage({'cmd':'ready'});\n\
 \n\
 }());\n\
 onmessage=null;\n\
@@ -50,9 +49,12 @@ onmessage=null;\n\
 	var postMessage;\n\
 	var self;\n\
 	var onmessage;\n\
+	try{\n\
 	/* user script begin */\n";
-	var scriptEnd = '\n/*user script end*/\n\
-}());';
+	var scriptEnd = '\n\
+	}catch(e){log("error",e.message)}/*user script end*/\n\
+}());\n\
+postMessage({"cmd":"ready"});';
 	function getScript(scriptContentStr){
 		var imports = importScriptsArray.length>0?'importScripts("'+importScriptsArray.join('","')+'");':'';
 		var s = [ scriptBegin ,imports , scriptContentStr , scriptEnd];
@@ -124,6 +126,6 @@ onmessage=null;\n\
 		'onMessage'	: onMessage,
 		'removeAll'	: removeAll,
 		'onReady'	: function(){},
-		'onError'	: function(e){console.warn("【user script error】",e.message,e);}
+		'onError'	: function(e){ /*e.preventDefault();*/ console.warn("【user script error】",e.message,e);}
 	}
 })(window);
