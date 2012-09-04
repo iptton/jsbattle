@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+ 	<head>
+ 		<title>JsBattle example 猜拳</title>
+ 		<script type="text/javascript" src="../jsbattle.js"></script>
+ 		<script type="text/javascript">
+ 			function $(id){return document.getElementById(id);}
+ 			var workers=[];
+ 			window.onload = function(){
+ 				$('addAIBtn').addEventListener('click',onAddClicked,false);
+ 				$('toggleRunState').addEventListener('click',onToggleClicked,false);
+ 				JsBattle.onReady = function(){
+ 					JsBattle.onMessage = function(evt){
+ 						console.info("【main thread】got message from worker",JSON.stringify(evt.data));
+ 					}
+ 					console.info("all ready");
+ 					workers.forEach(function(item){
+ 						item.postMessage("start");
+ 						//item.terminate();
+ 					})
+ 				}
+ 				JsBattle.addImports("../test.js");
+ 			}
+
+ 			var isRunning = false;
+ 			function onToggleClicked (event) {
+ 				if(isRunning){
+ 					event.target.innerHTML = "start";
+ 					JsBattle.removeAll();
+ 					workers = [];
+ 				}else{
+ 					event.target.innerHTML = "stop";
+ 					var inputs = $('editors').querySelectorAll("textarea");
+ 					for(var i=0;i<inputs.length;++i){
+ 						var ta = inputs[i];
+ 						var s = ta.value;
+ 						var w = JsBattle.addWorker(s);
+ 						workers.push(w);
+ 					}
+ 				}
+ 				isRunning = !isRunning;
+ 			}
+ 			function onAddClicked (event) {
+ 				var ta = document.createElement('textarea');
+ 				ta.setAttribute('class','userCodeInput');
+ 				ta.placeholder = 'code here';
+ 				$('editors').appendChild(ta);
+ 			}
+ 		</script>
+ 		<style type="text/css">
+ 			.userCodeInput{
+ 				width:200px;
+ 				height:200px;
+ 				float:left;
+ 			}
+ 		</style>
+ 	</head>
+ 	<body>
+ 		<div id="output"></div>
+ 		<div id="input">
+ 			<div>
+ 				<button id="addAIBtn">add worker</button>
+ 				<button id="toggleRunState">start</button>
+ 			</div>
+ 			<div id="editors">
+ 				<textarea class="userCodeInput" placeholder="code here">
+setInterval(function(){
+ 	CodeTank.fire();
+},5000)
+ 				</textarea>
+ 				<textarea class="userCodeInput" placeholder="code here">
+// onmessage,self,postMessage is all forbidden;
+onmessage=function(){log("a.....")};
+postMessage('cause error');
+self.addEventListener('message',function(){console.info("this never work")});
+ 				</textarea>
+ 				<textarea class="userCodeInput">
+/*
+while(true){
+	var s=[];// to force browser NOT to optimize the 'for' below 
+	for(var i=0;i &lt; 9999;++i)
+	 	for(var j=0;j &lt; 1999;++j)s.push(i*j);
+	 log("finished caculate,begining next caculate");
+}
+*/
+ 				</textarea>
+ 			</div>
+ 		</div>
+ 	</body>
+ </html>
