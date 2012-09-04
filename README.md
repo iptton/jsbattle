@@ -1,0 +1,2 @@
+-- javascript battle base lib
+
