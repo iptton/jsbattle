@@ -122,10 +122,6 @@ postMessage({"cmd":"ready"});';
 				delete workers[id];
 			}
 		}
-
-		workers.forEach(function(worker){
-			
-		});
 		blobUrls.forEach(function(url){
 			URL.revokeObjectURL(url);
 		});
