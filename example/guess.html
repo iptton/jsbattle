@@ -77,20 +77,27 @@
 
  			var isRunning = false;
  			var _id = 0;
+ 			var isWorkerCreated = false;
  			function onToggleClicked (event) {
  				if(isRunning){
- 					event.target.innerHTML = "start";
+ 					return;
+ 					event.target.innerHTML = "---";
  					JsBattle.removeAll();
  					workers = [];
  				}else{
- 					event.target.innerHTML = "stop";
- 					var inputs = $('editors').querySelectorAll("textarea");
- 					for(var i=0;i<inputs.length;++i){
- 						var ta = inputs[i];
- 						var s = ta.value;
- 						var id = _id++;
- 						var w = JsBattle.addWorker(s,id);
- 						workers[id] = w;
+ 					if(isWorkerCreated){
+ 						Game.request();
+ 					}else{
+ 						event.target.innerHTML = "---";
+ 						var inputs = $('editors').querySelectorAll("textarea");
+ 						for(var i=0;i<inputs.length;++i){
+ 							var ta = inputs[i];
+ 							var s = ta.value;
+ 							var id = _id++;
+ 							var w = JsBattle.addWorker(s,id);
+ 							workers[id] = w;
+ 						}
+ 						isWorkerCreated = true;
  					}
  				}
  				isRunning = !isRunning;
