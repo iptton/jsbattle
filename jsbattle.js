@@ -33,7 +33,7 @@ var log;\n\
 	};\n\
 	/* remove all listener */\n\
 	onmessage = null;\n\
-	self.removeEventListener('message');\n\
+	//self.removeEventListener('message');\n\
 	self.addEventListener('message',_onMessage);\n\
 	function _onMessage(e){\n\
 		//[log('got message from main thread');\n\
