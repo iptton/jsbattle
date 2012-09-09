@@ -42,4 +42,5 @@ var JsBattle = {
 		}
 	}
 };
+log('typeof document',typeof document);
 
